@@ -37,7 +37,28 @@ class ModelExtensionRetailcrmOrder extends Model {
         }
 
         if (!isset($order['customer']['externalId']) && !isset($order['customer']['id'])) {
-            $new_customer = $this->createCustomer($data);
+            $new_customer = array(
+                'firstName' => $data['firstname'],
+                'lastName' => $data['lastname'],
+                'email' => $data['email'],
+                'createdAt' => $data['date_added'],
+                'address' => array(
+                    'countryIso' => $data['payment_iso_code_2'],
+                    'index' => $data['payment_postcode'],
+                    'city' => $data['payment_city'],
+                    'region' => $data['payment_zone'],
+                    'text' => $data['payment_address_1'] . ' ' . $data['payment_address_2']
+                )
+            );
+
+            if (!empty($data['telephone'])) {
+                $new_customer['phones'] = array(
+                    array(
+                        'number' => $data['telephone']
+                    )
+                );
+            }
+
             $res = $retailcrmApiClient->customersCreate($new_customer);
 
             if ($res->isSuccessful() && isset($res['id'])) {
@@ -47,22 +68,12 @@ class ModelExtensionRetailcrmOrder extends Model {
 
         if ($create) {
             $order = self::filterRecursive($order);
-            var_dump($order);
-            $response = $retailcrmApiClient->ordersCreate($order);
-            var_dump($response);
-            if ($response->getStatusCode() === 400 && !empty($response->__get('errors')['customer.externalId'])) {
-                $order['customer'] = $this->createCustomer($data);
-                $response = $retailcrmApiClient->ordersEdit($order);
-            }
+            $retailcrmApiClient->ordersCreate($order);
         } else {
             $order_payment = reset($order['payments']);
             unset($order['payments']);
             $order = self::filterRecursive($order);
             $response = $retailcrmApiClient->ordersEdit($order);
-            if ($response->getStatusCode() === 400 && !empty($response->__get('errors')['customer.externalId'])) {
-                $order['customer'] = $this->createCustomer($data);
-                $response = $retailcrmApiClient->ordersEdit($order);
-            }
 
             if ($this->settings[$this->moduleTitle . '_apiversion'] == 'v5' && $response->isSuccessful()) {
                 $this->updatePayment($order_payment, $order['externalId'], $retailcrmApiClient);
@@ -99,9 +110,9 @@ class ModelExtensionRetailcrmOrder extends Model {
             $shippingModule = $shippingCode[0];
 
             if (isset($this->settings[$this->moduleTitle . '_delivery'][$order_data['shipping_code']])) {
-               $delivery_code = $this->settings[$this->moduleTitle . '_delivery'][$order_data['shipping_code']];
+                $delivery_code = $this->settings[$this->moduleTitle . '_delivery'][$order_data['shipping_code']];
             } elseif (isset($this->settings[$this->moduleTitle . '_delivery'][$shippingModule])) {
-               $delivery_code = $this->settings[$this->moduleTitle . '_delivery'][$shippingModule];
+                $delivery_code = $this->settings[$this->moduleTitle . '_delivery'][$shippingModule];
             }
         }
 
@@ -411,37 +422,5 @@ class ModelExtensionRetailcrmOrder extends Model {
             }
         }
         return $haystack;
-    }
-
-    /**
-     * @param array $data
-     *
-     * @return array
-     */
-    private function createCustomer($data)
-    {
-        $customer = array(
-            'firstName' => $data['firstname'],
-            'lastName' => $data['lastname'],
-            'email' => $data['email'],
-            'createdAt' => $data['date_added'],
-            'address' => array(
-                'countryIso' => $data['payment_iso_code_2'],
-                'index' => $data['payment_postcode'],
-                'city' => $data['payment_city'],
-                'region' => $data['payment_zone'],
-                'text' => $data['payment_address_1'] . ' ' . $data['payment_address_2']
-            )
-        );
-
-        if (!empty($data['telephone'])) {
-            $customer['phones'] = array(
-                array(
-                    'number' => $data['telephone']
-                )
-            );
-        }
-
-        return $customer;
     }
 }
