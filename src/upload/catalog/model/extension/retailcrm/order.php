@@ -68,7 +68,9 @@ class ModelExtensionRetailcrmOrder extends Model {
 
         if ($create) {
             $order = self::filterRecursive($order);
-            $retailcrmApiClient->ordersCreate($order);
+            $response = $retailcrmApiClient->ordersCreate($order);
+            var_dump($order);
+            var_dump($response);
         } else {
             $order_payment = reset($order['payments']);
             unset($order['payments']);
