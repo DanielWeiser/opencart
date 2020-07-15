@@ -212,7 +212,7 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
         $this->assertEquals('Rostov-na-Donu', $orderSend['delivery']['address']['region']);
         $this->assertEquals('111111', $orderSend['delivery']['address']['index']);
         $this->assertArrayHasKey('items', $orderSend);
-        $this->assertEquals(self::CRM_CUSTOMER_ID, $orderSend['customer']['id']);
+        $this->assertEquals(1, $orderSend['customer']['id']);
 
         foreach($orderSend['items'] as $item) {
             $this->assertArrayHasKey('priceType', $item);
