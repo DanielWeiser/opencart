@@ -103,7 +103,9 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
         );
 
         $this->apiClientMock->expects($this->any())->method('customersCreate')->willReturn($customersCreateResponse);
-        $this->apiClientMock->expects($this->any())->method('ordersCreate')->willReturn($orderEditSuccessResponse);
+        $this->apiClientMock->expects($this->any())->method('ordersCreate')->will(
+            $this->onConsecutiveCalls($orderEditErrorResponse, $orderEditSuccessResponse)
+        );
         /*$this->apiClientMock->expects($this->any())
             ->method('ordersCreate')
             ->will($this->returnValueMap(array($orderEditErrorResponse, $orderEditSuccessResponse))
