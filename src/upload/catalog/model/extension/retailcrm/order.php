@@ -50,7 +50,7 @@ class ModelExtensionRetailcrmOrder extends Model {
             $response = $retailcrmApiClient->ordersCreate($order);
             if (isset($response['errors']['customer.externalId'])) {
                 $order['customer'] = $this->createCustomer($data);
-                $response = $retailcrmApiClient->ordersEdit($order);
+                $response = $retailcrmApiClient->ordersCreate($order);
             }
         } else {
             $order_payment = reset($order['payments']);

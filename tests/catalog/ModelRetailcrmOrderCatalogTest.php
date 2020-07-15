@@ -71,6 +71,17 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
         }
 
         $orderProcess = $this->orderModel->processOrder($order);
+        $orderEditResponse = new \RetailcrmApiResponse(
+            200,
+            json_encode(
+                array(
+                    'success' => true,
+                    'id' => 1
+                )
+            )
+        );
+
+        $this->apiClientMock->expects($this->any())->method('ordersCreate')->willReturn($orderEditResponse);
         $orderSend = $this->orderModel->sendToCrm($orderProcess, $this->apiClientMock, $order);
 
         $this->assertArrayHasKey('status', $orderSend);
