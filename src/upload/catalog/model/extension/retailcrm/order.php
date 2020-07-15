@@ -48,6 +48,7 @@ class ModelExtensionRetailcrmOrder extends Model {
         if ($create) {
             $order = self::filterRecursive($order);
             $response = $retailcrmApiClient->ordersCreate($order);
+            var_dump($response);
             if ($response->getStatusCode() === 400 && isset($response['errors']['customer.externalId'])) {
                 $order['customer'] = $this->createCustomer($data);
                 $response = $retailcrmApiClient->ordersCreate($order);
