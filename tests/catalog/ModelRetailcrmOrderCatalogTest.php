@@ -11,7 +11,6 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
     const CUSTOMER_ID = 1;
     const ORDER_WITH_CUST_ID = 1;
     const ORDER_ID = 2;
-    const CRM_CUSTOMER_ID = 2;
 
     public function setUp()
     {
@@ -72,26 +71,17 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
         }
 
         $orderProcess = $this->orderModel->processOrder($order);
-        $customersCreateResponse = new \RetailcrmApiResponse(
+        $successResponse = new \RetailcrmApiResponse(
             200,
             json_encode(
                 array(
                     'success' => true,
-                    'id' => self::CRM_CUSTOMER_ID,
+                    'id' => 1,
                 )
             )
         );
 
-        $orderEditSuccessResponse = new \RetailcrmApiResponse(
-            200,
-            json_encode(
-                array(
-                    'success' => true,
-                )
-            )
-        );
-
-        $orderEditErrorResponse = new \RetailcrmApiResponse(
+        $orderCreateErrorResponse = new \RetailcrmApiResponse(
             400,
             json_encode(
                 array(
@@ -102,14 +92,10 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
             )
         );
 
-        $this->apiClientMock->expects($this->any())->method('customersCreate')->willReturn($customersCreateResponse);
+        $this->apiClientMock->expects($this->any())->method('customersCreate')->willReturn($successResponse);
         $this->apiClientMock->expects($this->any())->method('ordersCreate')->will(
-            $this->onConsecutiveCalls($orderEditErrorResponse, $orderEditSuccessResponse)
+            $this->onConsecutiveCalls($orderCreateErrorResponse, $successResponse)
         );
-        /*$this->apiClientMock->expects($this->any())
-            ->method('ordersCreate')
-            ->will($this->returnValueMap(array($orderEditErrorResponse, $orderEditSuccessResponse))
-        );*/
 
         $orderSend = $this->orderModel->sendToCrm($orderProcess, $this->apiClientMock, $order);
 
@@ -143,7 +129,7 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
         $this->assertArrayHasKey('customer', $orderSend);
         $this->assertArrayHasKey('externalId', $orderSend['customer']);
         $this->assertEquals(self::CUSTOMER_ID, $orderSend['customer']['externalId']);
-        $this->assertEquals(self::CRM_CUSTOMER_ID, $orderSend['customer']['id']);
+        $this->assertEquals(1, $orderSend['customer']['id']);
         $this->assertArrayHasKey('payments', $orderSend);
         $this->assertEquals('cod', $orderSend['payments'][0]['type']);
         $this->assertNotEmpty($orderSend['payments']);
@@ -186,9 +172,23 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
             )
         );
 
-        $this->apiClientMock->expects($this->any())->method('ordersEdit')->willReturn($orderEditResponse);
+        $orderEditErrorResponse = new \RetailcrmApiResponse(
+            400,
+            json_encode(
+                array(
+                    'errors' => array (
+                        'customer.externalId' => "Customer with externalId=1 not found.",
+                    )
+                )
+            )
+        );
+
         $this->apiClientMock->expects($this->any())->method('ordersGet')->willReturn($ordersGetResponse);
         $this->apiClientMock->expects($this->any())->method('customersCreate')->willReturn($orderEditResponse);
+        $this->apiClientMock->expects($this->any())->method('ordersEdit')->will(
+            $this->onConsecutiveCalls($orderEditErrorResponse, $orderEditResponse)
+        );
+
         $orderProcess = $this->orderModel->processOrder($order);
         $orderSend = $this->orderModel->sendToCrm($orderProcess, $this->apiClientMock, $order, false);
 
@@ -212,6 +212,7 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
         $this->assertEquals('Rostov-na-Donu', $orderSend['delivery']['address']['region']);
         $this->assertEquals('111111', $orderSend['delivery']['address']['index']);
         $this->assertArrayHasKey('items', $orderSend);
+        $this->assertEquals(self::CRM_CUSTOMER_ID, $orderSend['customer']['id']);
 
         foreach($orderSend['items'] as $item) {
             $this->assertArrayHasKey('priceType', $item);
