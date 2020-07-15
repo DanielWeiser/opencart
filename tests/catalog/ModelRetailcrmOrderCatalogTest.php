@@ -107,7 +107,7 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
             ->method('ordersCreate')
             ->will($this->returnValueMap([$orderEditErrorResponse, $orderEditSuccessResponse])
         );
-        
+
         $orderSend = $this->orderModel->sendToCrm($orderProcess, $this->apiClientMock, $order);
 
         $this->assertArrayHasKey('status', $orderSend);

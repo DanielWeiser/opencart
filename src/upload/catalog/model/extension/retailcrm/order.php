@@ -53,6 +53,8 @@ class ModelExtensionRetailcrmOrder extends Model {
                 }
 
                 $retailcrmApiClient->ordersCreate($order);
+                print_r("huyt");
+                var_dump($order['customer']['id']);
             }
         } else {
             $order_payment = reset($order['payments']);
