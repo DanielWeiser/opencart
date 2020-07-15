@@ -96,7 +96,7 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
             json_encode(
                 array(
                     'errors' => array (
-                        'customer.externalId' => "Customer with externalId=227 not found.",
+                        'customer.externalId' => "Customer with externalId=1 not found.",
                     )
                 )
             )

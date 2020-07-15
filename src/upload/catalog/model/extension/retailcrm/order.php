@@ -53,7 +53,8 @@ class ModelExtensionRetailcrmOrder extends Model {
                     $order['customer']['id'] = $res['id'];
                 }
 
-                $retailcrmApiClient->ordersCreate($order);
+                $response = $retailcrmApiClient->ordersCreate($order);
+                var_dump($response);
             }
         } else {
             $order_payment = reset($order['payments']);
