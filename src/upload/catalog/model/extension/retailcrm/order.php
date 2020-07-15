@@ -48,17 +48,16 @@ class ModelExtensionRetailcrmOrder extends Model {
         if ($create) {
             $order = self::filterRecursive($order);
             $response = $retailcrmApiClient->ordersCreate($order);
-            var_dump($response);
-            if ($response->getStatusCode() === 400 && isset($response['errors']['customer.externalId'])) {
+            if (isset($response['errors']['customer.externalId'])) {
                 $order['customer'] = $this->createCustomer($data);
-                $response = $retailcrmApiClient->ordersCreate($order);
+                $response = $retailcrmApiClient->ordersEdit($order);
             }
         } else {
             $order_payment = reset($order['payments']);
             unset($order['payments']);
             $order = self::filterRecursive($order);
             $response = $retailcrmApiClient->ordersEdit($order);
-            if ($response->getStatusCode() === 400 && isset($response['errors']['customer.externalId'])) {
+            if (isset($response['errors']['customer.externalId'])) {
                 $order['customer'] = $this->createCustomer($data);
                 $response = $retailcrmApiClient->ordersEdit($order);
             }
