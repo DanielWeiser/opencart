@@ -46,6 +46,7 @@ class ModelExtensionRetailcrmOrder extends Model {
         if ($create) {
             $order = self::filterRecursive($order);
             $response = $retailcrmApiClient->ordersCreate($order);
+            var_dump($response);
             if (isset($response['errors']['customer.externalId'])) {
                 $res = $this->createCustomer($data, $retailcrmApiClient);
                 if ($res->isSuccessful() && isset($res['id'])) {
@@ -54,7 +55,6 @@ class ModelExtensionRetailcrmOrder extends Model {
 
                 $retailcrmApiClient->ordersCreate($order);
                 print_r("huyt");
-                
                 var_dump($order['customer']['id']);
             }
         } else {

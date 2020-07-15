@@ -105,7 +105,7 @@ class ModelRetailcrmOrderCatalogTest extends TestCase
         $this->apiClientMock->expects($this->any())->method('customersCreate')->willReturn($customersCreateResponse);
         $this->apiClientMock->expects($this->any())
             ->method('ordersCreate')
-            ->will($this->returnValueMap([$orderEditErrorResponse, $orderEditSuccessResponse])
+            ->willReturnMap([$orderEditErrorResponse, $orderEditSuccessResponse]
         );
 
         $orderSend = $this->orderModel->sendToCrm($orderProcess, $this->apiClientMock, $order);
